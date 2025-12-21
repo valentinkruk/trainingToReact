@@ -7,11 +7,10 @@ import IconButton from '@mui/material/IconButton'
 import MenuIcon from '@mui/icons-material/Menu'
 import { Avatar, Stack, Tooltip } from '@mui/material'
 
-import RadioGroup from '@mui/material/RadioGroup'
-import Radio from '@mui/material/Radio'
 import FormControl from '@mui/material/FormControl'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import { useColorScheme } from '@mui/material/styles'
+import MaterialUISwitch from './switch'
 
 const ButtonAppBar = () => {
 	const { mode, setMode } = useColorScheme()
@@ -35,16 +34,15 @@ const ButtonAppBar = () => {
 						</Typography>
 					</Stack>
 					<FormControl>
-						<RadioGroup
-							aria-labelledby="demo-theme-toggle"
-							name="theme-toggle"
-							row
-							value={mode}
-							onChange={(event) => setMode(event.target.value as 'light' | 'dark')}
-						>
-							<FormControlLabel value="light" control={<Radio />} label="Light" />
-							<FormControlLabel value="dark" control={<Radio />} label="Dark" />
-						</RadioGroup>
+						<FormControlLabel
+							label="Theme"
+							control={
+								<MaterialUISwitch
+									checked={mode === 'dark'}
+									onChange={(e) => setMode(e.target.checked ? 'dark' : 'light')}
+								/>
+							}
+						/>
 					</FormControl>
 					<Button color="inherit">Login</Button>
 					<Tooltip title="User">
