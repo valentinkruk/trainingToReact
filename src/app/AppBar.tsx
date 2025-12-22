@@ -35,7 +35,7 @@ const ButtonAppBar = () => {
 					</Stack>
 					<FormControl>
 						<FormControlLabel
-							label="Theme"
+							label=""
 							control={
 								<MaterialUISwitch
 									checked={mode === 'dark'}
