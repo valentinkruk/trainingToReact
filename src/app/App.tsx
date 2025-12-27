@@ -4,15 +4,36 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
 import AppBar from './AppBar';
-import { Button, Container, InputAdornment, Stack, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
-import { AccountCircle } from '@mui/icons-material';
+import {
+	Button,
+	Container,
+	IconButton,
+	InputAdornment,
+	Stack,
+	TextField,
+	ToggleButton,
+	ToggleButtonGroup,
+} from '@mui/material';
+import { AccountCircle, Visibility, VisibilityOff } from '@mui/icons-material';
 import { useState, type SyntheticEvent } from 'react';
 
+import { jwtDecode } from 'jwt-decode';
+
 function App() {
+	const [user, setUser] = useState<{ access_token: string; username: string } | null>(null);
 	const [username, setUserName] = useState('');
 	const [password, setPassowrd] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [loginFormName, setLoginFormName] = useState('login');
+	const [showPassword, setShowPassword] = useState(false);
+
+	const handleClickShowPassword = () => setShowPassword((show) => !show);
+	const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+		event.preventDefault();
+	};
+	const handleMouseUpPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+		event.preventDefault();
+	};
 
 	const handleUserNameChange = (e: SyntheticEvent<HTMLTextAreaElement | HTMLInputElement>) => {
 		setUserName(e.currentTarget.value);
@@ -21,12 +42,36 @@ function App() {
 		setPassowrd(e.currentTarget.value);
 	};
 
-	const handleLogin = () => {
-		console.log({ username, password });
+	const handleLogin = async () => {
 		setLoading(true);
-		setTimeout(() => {
-			setLoading(false);
-		}, 2000);
+		const loginResponse = await fetch('https://todos-be.vercel.app/auth/login', {
+			method: 'POST',
+			body: JSON.stringify({ username: username, password: password }),
+			mode: 'cors',
+			headers: {
+				'Content-type': 'application/json',
+			},
+		});
+		const loginData = (await loginResponse.json()) as { access_token: string; username: string };
+		const accessToken = loginData.access_token;
+		console.log(jwtDecode(accessToken));
+		localStorage.setItem('accessToken', accessToken);
+		setUser(loginData);
+		setLoading(false);
+	};
+
+	const handleRegister = async () => {
+		setLoading(true);
+		await fetch('https://todos-be.vercel.app/auth/register', {
+			method: 'POST',
+			body: JSON.stringify({ username: username, password: password }),
+			mode: 'cors',
+			headers: {
+				'Content-type': 'application/json',
+			},
+		});
+
+		setLoading(false);
 	};
 
 	const handleChange = (_event: React.MouseEvent<HTMLElement>, newAlignment: string) => {
@@ -34,7 +79,7 @@ function App() {
 	};
 	return (
 		<>
-			<AppBar />
+			<AppBar username={user?.username} />
 			<div style={{ marginTop: '100px' }}></div>
 
 			<Container maxWidth={'sm'}>
@@ -84,6 +129,19 @@ function App() {
 											<AccountCircle />
 										</InputAdornment>
 									),
+									endAdornment: (
+										<InputAdornment position="end">
+											<IconButton
+												aria-label={showPassword ? 'hide the password' : 'display the password'}
+												onClick={handleClickShowPassword}
+												onMouseDown={handleMouseDownPassword}
+												onMouseUp={handleMouseUpPassword}
+												edge="end"
+											>
+												{showPassword ? <VisibilityOff /> : <Visibility />}
+											</IconButton>
+										</InputAdornment>
+									),
 								},
 							}}
 						/>
@@ -113,7 +171,7 @@ function App() {
 							disabled={loading}
 							value={password}
 							onChange={handlePasswordChange}
-							type="password"
+							type={showPassword ? 'text' : 'password'}
 							label="password"
 							variant="filled"
 							slotProps={{
@@ -123,10 +181,23 @@ function App() {
 											<AccountCircle />
 										</InputAdornment>
 									),
+									endAdornment: (
+										<InputAdornment position="end">
+											<IconButton
+												aria-label={showPassword ? 'hide the password' : 'display the password'}
+												onClick={handleClickShowPassword}
+												onMouseDown={handleMouseDownPassword}
+												onMouseUp={handleMouseUpPassword}
+												edge="end"
+											>
+												{showPassword ? <VisibilityOff /> : <Visibility />}
+											</IconButton>
+										</InputAdornment>
+									),
 								},
 							}}
 						/>
-						<Button onClick={handleLogin} variant="contained" loadingPosition="start" loading={loading}>
+						<Button onClick={handleRegister} variant="contained" loadingPosition="start" loading={loading}>
 							{loading ? 'Loading' : 'Register'}
 						</Button>
 					</Stack>
