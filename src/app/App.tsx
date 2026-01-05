@@ -20,6 +20,7 @@ import { useState, type SyntheticEvent } from 'react';
 import { jwtDecode } from 'jwt-decode';
 
 function App() {
+	// нужно для хранения пользователя(user)
 	const [user, setUser] = useState<{ access_token: string; username: string } | null>(null);
 	const [username, setUserName] = useState('');
 	const [password, setPassowrd] = useState('');
@@ -44,34 +45,50 @@ function App() {
 
 	const handleLogin = async () => {
 		setLoading(true);
-		const loginResponse = await fetch('https://todos-be.vercel.app/auth/login', {
-			method: 'POST',
-			body: JSON.stringify({ username: username, password: password }),
-			mode: 'cors',
-			headers: {
-				'Content-type': 'application/json',
-			},
-		});
-		const loginData = (await loginResponse.json()) as { access_token: string; username: string };
-		const accessToken = loginData.access_token;
-		console.log(jwtDecode(accessToken));
-		localStorage.setItem('accessToken', accessToken);
-		setUser(loginData);
-		setLoading(false);
+		try {
+			const loginResponse = await fetch('https://todos-be.vercel.app/auth/login', {
+				method: 'POST',
+				body: JSON.stringify({ username: username, password: password }),
+				mode: 'cors',
+				headers: {
+					'Content-type': 'application/json',
+				},
+			});
+
+			if (!loginResponse.ok) {
+				throw new Error('Invalid credentials');
+			}
+			const loginData = (await loginResponse.json()) as { access_token: string; username: string };
+			const accessToken = loginData.access_token;
+			console.log(jwtDecode(accessToken));
+			localStorage.setItem('accessToken', accessToken);
+			setUser(loginData);
+		} catch (error) {
+			alert(error);
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	const handleRegister = async () => {
 		setLoading(true);
-		await fetch('https://todos-be.vercel.app/auth/register', {
-			method: 'POST',
-			body: JSON.stringify({ username: username, password: password }),
-			mode: 'cors',
-			headers: {
-				'Content-type': 'application/json',
-			},
-		});
-
-		setLoading(false);
+		try {
+			const registerResponse = await fetch('https://todos-be.vercel.app/auth/register', {
+				method: 'POST',
+				body: JSON.stringify({ username: username, password: password }),
+				mode: 'cors',
+				headers: {
+					'Content-type': 'application/json',
+				},
+			});
+			if (!registerResponse.ok) {
+				throw new Error('username already exists');
+			}
+		} catch (error) {
+			alert(error);
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	const handleChange = (_event: React.MouseEvent<HTMLElement>, newAlignment: string) => {
@@ -119,7 +136,7 @@ function App() {
 							disabled={loading}
 							value={password}
 							onChange={handlePasswordChange}
-							type="password"
+							type={showPassword ? 'text' : 'password'}
 							label="password"
 							variant="filled"
 							slotProps={{
